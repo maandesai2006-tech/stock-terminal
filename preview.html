@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Scanner - Market Intelligence Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: #0a0f1e;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            background: #0a0f1e;
+        }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            background: #0d1321;
+            border-bottom: 1px solid #1e293b;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+        }
+
+        .topbar-label {
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .topbar-center {
+            flex: 1;
+            display: flex;
+            gap: 24px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .topbar-dropdown {
+            padding: 8px 16px;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            background: #111827;
+            color: white;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .topbar-dropdown:hover {
+            border-color: #475569;
+        }
+
+        .topbar-button {
+            padding: 8px 24px;
+            background: #06b6d4;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+            transition: background 0.2s;
+        }
+
+        .topbar-button:hover {
+            background: #0891b2;
+        }
+
+        .topbar-stats {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            font-family: 'Courier Prime', monospace;
+            font-size: 12px;
+            color: #94a3b8;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+        }
+
+        .topbar-stats span.value {
+            color: white;
+            font-weight: 600;
+        }
+
+        /* ===== FILTER BAR ===== */
+        .filter-bar {
+            background: #0a0f1e;
+            border-bottom: 1px solid #1e293b;
+            padding: 16px 24px;
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .filter-group-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            background: transparent;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        .filter-btn.active {
+            background: #06b6d4;
+            border-color: #06b6d4;
+            color: white;
+        }
+
+        /* ===== CARDS CONTAINER ===== */
+        .cards-container {
+            max-width: 960px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+
+        /* ===== TRADE CARD ===== */
+        .trade-card {
+            background: #111827;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        /* Card Header */
+        .card-header {
+            padding: 20px 20px 16px 20px;
+        }
+
+        .card-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .card-title-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ticker {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .score {
+            font-size: 24px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .score.high { color: #10b981; }
+        .score.medium { color: #f59e0b; }
+        .score.low { color: #ef4444; }
+
+        .grade {
+            font-size: 18px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .pill {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid;
+            white-space: nowrap;
+        }
+
+        .pill.bullish {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .pill.neutral {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .pill.bearish {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .pill.sector {
+            background: rgba(51, 65, 85, 0.5);
+            color: #cbd5e1;
+            border-color: #1e293b;
+        }
+
+        .pill.position-full {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .pill.position-half {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        /* Score Bars */
+        .score-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .score-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .bar-label {
+            width: 80px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 10px;
+            background: #1a2235;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.3s ease;
+        }
+
+        .bar-fill.high { background: #10b981; }
+        .bar-fill.medium { background: #f59e0b; }
+        .bar-fill.low { background: #ef4444; }
+
+        .bar-value {
+            width: 48px;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .bar-value.high { color: #10b981; }
+        .bar-value.medium { color: #f59e0b; }
+        .bar-value.low { color: #ef4444; }
+
+        /* Strategy Block */
+        .strategy-block {
+            background: #1a2235;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            space-y: 16px;
+        }
+
+        .strategy-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .strategy-title-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .strategy-badge {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .strategy-name {
+            font-weight: 700;
+            color: white;
+            font-size: 14px;
+        }
+
+        .strategy-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .strategy-expiration {
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        .dte-badge {
+            background: #2d3748;
+            color: #cbd5e1;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 999px;
+        }
+
+        /* Legs Table */
+        .legs-table {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 13px;
+        }
+
+        .leg-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .leg-action { width: 48px; }
+        .leg-action.buy { color: #10b981; font-weight: 700; }
+        .leg-action.sell { color: #ef4444; font-weight: 700; }
+
+        .leg-type { width: 48px; color: white; font-weight: 600; }
+        .leg-strike { flex: 1; color: #cbd5e1; }
+        .leg-price { width: 64px; text-align: right; color: #cbd5e1; }
+
+        /* Metrics Row */
+        .strategy-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 12px;
+            padding: 12px 0;
+            border-top: 1px solid #2d3748;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .metric-value.profit { color: #6ee7b7; }
+        .metric-value.loss { color: #fca5a5; }
+        .metric-value.neutral { color: white; }
+
+        /* CTA Strip */
+        .cta-strip {
+            border-radius: 6px;
+            padding: 8px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            color: white;
+            margin-top: 12px;
+        }
+
+        .cta-strip.credit {
+            background: #059669;
+        }
+
+        .cta-strip.debit {
+            background: #0369a1;
+        }
+
+        /* Why This Trade */
+        .why-section {
+            padding: 16px 0;
+            border-top: 1px solid rgba(45, 55, 72, 0.3);
+            margin-top: 4px;
+        }
+
+        .why-title {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .why-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .why-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .why-bullet {
+            color: #64748b;
+            margin-top: 2px;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        .why-text {
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        /* Macro Banner */
+        .macro-banner {
+            border-top: 1px solid #1e293b;
+            border-bottom: 1px solid #1e293b;
+            padding: 8px 16px;
+            margin: 16px 0;
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.6;
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        .macro-banner strong {
+            color: white;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        .macro-banner code {
+            font-family: 'Courier Prime', monospace;
+            color: white;
+            font-style: normal;
+            background: transparent;
+        }
+
+        /* Warning Banner */
+        .warning-banner {
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+            padding: 12px 16px;
+            margin: 8px 0;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .warning-banner.high-risk {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .warning-banner.medium-risk {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .warning-item {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .warning-icon {
+            font-size: 14px;
+        }
+
+        .warning-text {
+            color: #fca5a5;
+        }
+
+        .warning-text.medium {
+            color: #fcd34d;
+        }
+
+        .warning-message {
+            color: #94a3b8;
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        /* Key Stats */
+        .key-stats {
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            background: #111827;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .key-stats-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stats-row {
+            font-size: 12px;
+            line-height: 1.6;
+            font-family: 'Courier Prime', monospace;
+        }
+
+        .stats-row strong {
+            color: white;
+            font-weight: 600;
+        }
+
+        .stats-row .label {
+            color: white;
+        }
+
+        .stats-row .secondary {
+            color: #94a3b8;
+        }
+
+        .stats-row .muted {
+            color: #64748b;
+        }
+
+        .stats-row .value {
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Headlines */
+        .headlines {
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            background: #111827;
+            padding: 12px 16px;
+            margin: 12px 0;
+        }
+
+        .headlines-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .headlines-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .headline-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .headline-item:hover {
+            background: rgba(26, 34, 53, 0.3);
+        }
+
+        .headline-text {
+            flex: 1;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 300;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .headline-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .headline-source {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .headline-sentiment {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid;
+        }
+
+        .headline-sentiment.bullish {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .headline-sentiment.neutral {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .headline-sentiment.bearish {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Card Body */
+        .card-body {
+            padding: 0 20px;
+        }
+
+        .card-footer {
+            padding: 0 20px 20px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <div class="topbar-label">Market Intelligence</div>
+            <div class="topbar-center">
+                <button class="topbar-dropdown">S&P 500</button>
+                <button class="topbar-button">Scan Market</button>
+            </div>
+            <div class="topbar-stats">
+                Scanned: <span class="value">487</span> |
+                Filtered: <span class="value">52</span> |
+                Scored: <span class="value">52</span> |
+                Selected: <span class="value">8</span> |
+                Time: <span class="value">3.2s</span>
+            </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <div class="filter-group-label">SORT</div>
+                <button class="filter-btn active">Score</button>
+                <button class="filter-btn">Ticker</button>
+                <button class="filter-btn">Sentiment</button>
+                <button class="filter-btn">Sector</button>
+            </div>
+            <div class="filter-group">
+                <div class="filter-group-label">FILTER</div>
+                <button class="filter-btn active">All</button>
+                <button class="filter-btn">Full Position</button>
+                <button class="filter-btn">Half Size</button>
+                <button class="filter-btn">Bullish</button>
+                <button class="filter-btn">Neutral</button>
+            </div>
+        </div>
+
+        <!-- CARDS CONTAINER -->
+        <div class="cards-container">
+
+            <!-- CARD 1: PYPL -->
+            <div class="trade-card">
+                <div class="card-header">
+                    <div class="card-title-row">
+                        <div class="card-title-left">
+                            <div class="ticker">PYPL</div>
+                            <div class="score high">65.2</div>
+                            <div class="grade">B</div>
+                        </div>
+                        <div class="card-tags">
+                            <span class="pill bullish">BULLISH</span>
+                            <span class="pill sector">Technology</span>
+                            <span class="pill position-full">4/4 FULL POSITION</span>
+                        </div>
+                    </div>
+
+                    <div class="score-bars">
+                        <div class="score-bar">
+                            <div class="bar-label">Vol Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 72%"></div></div>
+                            <div class="bar-value medium">72</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Quality</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 58%"></div></div>
+                            <div class="bar-value medium">58</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Regime</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 64%"></div></div>
+                            <div class="bar-value medium">64</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Info Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 62%"></div></div>
+                            <div class="bar-value medium">62</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Strategy A: Iron Condor -->
+                    <div class="strategy-block">
+                        <div class="strategy-header">
+                            <div class="strategy-title-left">
+                                <div class="strategy-badge">A</div>
+                                <div class="strategy-name">Iron Condor</div>
+                            </div>
+                            <div class="strategy-meta">
+                                <div class="strategy-expiration">2026-04-15</div>
+                                <div class="dte-badge">21 DTE</div>
+                            </div>
+                        </div>
+
+                        <div class="legs-table">
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$52</div>
+                                <div class="leg-price">$0.75</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$50</div>
+                                <div class="leg-price">$0.35</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$58</div>
+                                <div class="leg-price">$0.68</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$60</div>
+                                <div class="leg-price">$0.42</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Max Profit</div>
+                                <div class="metric-value profit">$66</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Max Loss</div>
+                                <div class="metric-value loss">$134</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value neutral">53.2%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Risk/Reward</div>
+                                <div class="metric-value neutral">0.49</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-strip credit">Collect $66 premium per contract</div>
+                    </div>
+
+                    <!-- Strategy B: Bull Call Spread -->
+                    <div class="strategy-block">
+                        <div class="strategy-header">
+                            <div class="strategy-title-left">
+                                <div class="strategy-badge">B</div>
+                                <div class="strategy-name">Bull Call Spread</div>
+                            </div>
+                            <div class="strategy-meta">
+                                <div class="strategy-expiration">2026-04-18</div>
+                                <div class="dte-badge">24 DTE</div>
+                            </div>
+                        </div>
+
+                        <div class="legs-table">
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$54</div>
+                                <div class="leg-price">$2.12</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$58</div>
+                                <div class="leg-price">$1.05</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Max Profit</div>
+                                <div class="metric-value profit">$307</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Max Loss</div>
+                                <div class="metric-value loss">$107</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value neutral">49.6%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Risk/Reward</div>
+                                <div class="metric-value neutral">2.87</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-strip debit">Pay $107 to enter per contract</div>
+                    </div>
+
+                    <!-- Strategy C: Put Credit Spread -->
+                    <div class="strategy-block">
+                        <div class="strategy-header">
+                            <div class="strategy-title-left">
+                                <div class="strategy-badge">C</div>
+                                <div class="strategy-name">Put Credit Spread</div>
+                            </div>
+                            <div class="strategy-meta">
+                                <div class="strategy-expiration">2026-04-10</div>
+                                <div class="dte-badge">16 DTE</div>
+                            </div>
+                        </div>
+
+                        <div class="legs-table">
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$52</div>
+                                <div class="leg-price">$0.85</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$49</div>
+                                <div class="leg-price">$0.38</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Max Profit</div>
+                                <div class="metric-value profit">$47</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Max Loss</div>
+                                <div class="metric-value loss">$253</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value neutral">68.5%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Risk/Reward</div>
+                                <div class="metric-value neutral">0.19</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-strip credit">Collect $47 premium per contract</div>
+                    </div>
+
+                    <!-- Why This Trade -->
+                    <div class="why-section">
+                        <div class="why-title">Why This Trade</div>
+                        <div class="why-list">
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Options are expensive — IV rank at 78%. Premiums are elevated. Better for selling strategies.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">The market is pricing in 1.63x more movement than actually happens — implied vol (38.2%) is well above realized vol (23.4%). Edge for sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Wall Street is bullish — 82% of analysts rate this a Buy or Strong Buy.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">3-quarter earnings beat streak — consistent outperformance lately.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="macro-banner">
+                        <strong>Dominant macro regime:</strong> <code>GOLDILOCKS</code> (0% probability). <code>VIX 21.3</code>. Regime favors <strong>Iron Condor</strong>. SPY correlation: <code>0.68</code> (modifier: <code>0.87x</code>).
+                    </div>
+
+                    <div class="key-stats">
+                        <div class="key-stats-title">Key Stats</div>
+                        <div class="stats-row"><span class="label">Volatility:</span> <span class="secondary">IV Rank</span> <span class="value">78.00</span> <span class="muted">| options are expensive vs. past year</span> | IV <span class="value">38.2%</span> | HV <span class="value">23.4%</span></div>
+                        <div class="stats-row"><span class="label">Company:</span> <span class="secondary">P/E</span> <span class="value">18.5</span> <span class="muted">| fair on earnings</span> | Cap <span class="value">$70.0B</span> | Earnings <span class="value">2026-04-22</span></div>
+                        <div class="stats-row"><span class="label">Market:</span> <span class="secondary">Beta</span> <span class="value">1.15</span> <span class="muted">| tracks the market</span> | SPY Corr <span class="value">0.68</span> <span class="muted">| roughly follows the S&P 500</span> | Liquidity <span class="value">8/10</span></div>
+                        <div class="stats-row"><span class="label">Sentiment:</span> <span class="secondary">Analyst:</span> <span class="value">Strong Buy</span> | Buzz <span class="value">7.2x</span> <span class="muted">| active interest</span> | Trend: <span class="value">12 stable sentiment</span></div>
+                    </div>
+
+                    <div class="headlines">
+                        <div class="headlines-title">Recent Headlines</div>
+                        <div class="headlines-list">
+                            <div class="headline-item">
+                                <div class="headline-text">"PYPL announces strategic partnership expansion"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Reuters</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"Analyst upgrades PYPL on improved margins"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">MarketWatch</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"Options traders bet on PYPL earnings move"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">CNBC</span>
+                                    <span class="headline-sentiment neutral">neutral</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 2: FCX -->
+            <div class="trade-card">
+                <div class="card-header">
+                    <div class="card-title-row">
+                        <div class="card-title-left">
+                            <div class="ticker">FCX</div>
+                            <div class="score high">66.7</div>
+                            <div class="grade">B</div>
+                        </div>
+                        <div class="card-tags">
+                            <span class="pill bullish">BULLISH</span>
+                            <span class="pill sector">Basic Materials</span>
+                            <span class="pill position-full">4/4 FULL POSITION</span>
+                        </div>
+                    </div>
+
+                    <div class="score-bars">
+                        <div class="score-bar">
+                            <div class="bar-label">Vol Edge</div>
+                            <div class="bar-track"><div class="bar-fill high" style="width: 74%"></div></div>
+                            <div class="bar-value high">74</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Quality</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 56%"></div></div>
+                            <div class="bar-value medium">56</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Regime</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 68%"></div></div>
+                            <div class="bar-value medium">68</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Info Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 61%"></div></div>
+                            <div class="bar-value medium">61</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="strategy-block">
+                        <div class="strategy-header">
+                            <div class="strategy-title-left">
+                                <div class="strategy-badge">A</div>
+                                <div class="strategy-name">Bull Call Spread</div>
+                            </div>
+                            <div class="strategy-meta">
+                                <div class="strategy-expiration">2026-04-20</div>
+                                <div class="dte-badge">26 DTE</div>
+                            </div>
+                        </div>
+
+                        <div class="legs-table">
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$48</div>
+                                <div class="leg-price">$1.95</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$52</div>
+                                <div class="leg-price">$0.92</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Max Profit</div>
+                                <div class="metric-value profit">$303</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Max Loss</div>
+                                <div class="metric-value loss">$103</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value neutral">48.2%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Risk/Reward</div>
+                                <div class="metric-value neutral">2.94</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-strip debit">Pay $103 to enter per contract</div>
+                    </div>
+
+                    <div class="why-section">
+                        <div class="why-title">Why This Trade</div>
+                        <div class="why-list">
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Options are moderately priced — IV rank at 55%. Premiums are in the middle range, balanced for both buyers and sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Implied vol (32.1%) exceeds realized vol (19.8%) — market expects more volatility than recent history. Slight edge for sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Analyst consensus is mixed — 65% rate it Buy/Strong Buy, rest are Hold/Sell.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">2-quarter earnings beat streak — consistent outperformance lately.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="macro-banner">
+                        <strong>Dominant macro regime:</strong> <code>GOLDILOCKS</code> (0% probability). <code>VIX 20.1</code>. Regime favors <strong>Iron Condor</strong>. SPY correlation: <code>0.72</code> (modifier: <code>0.84x</code>).
+                    </div>
+
+                    <div class="warning-banner medium-risk">
+                        <div class="warning-item">
+                            <span class="warning-icon">⚠</span>
+                            <span class="warning-text medium">EARNINGS_WITHIN_DTE</span>
+                            <span class="warning-message">— Earnings in 9 days</span>
+                        </div>
+                    </div>
+
+                    <div class="key-stats">
+                        <div class="key-stats-title">Key Stats</div>
+                        <div class="stats-row"><span class="label">Volatility:</span> <span class="secondary">IV Rank</span> <span class="value">55.00</span> <span class="muted">| options are moderately priced vs. past year</span> | IV <span class="value">32.1%</span> | HV <span class="value">19.8%</span></div>
+                        <div class="stats-row"><span class="label">Company:</span> <span class="secondary">P/E</span> <span class="value">22.3</span> <span class="muted">| expensive</span> | Cap <span class="value">$60.0B</span> | Earnings <span class="value">2026-04-03</span></div>
+                        <div class="stats-row"><span class="label">Market:</span> <span class="secondary">Beta</span> <span class="value">1.28</span> <span class="muted">| more volatile than the market</span> | SPY Corr <span class="value">0.72</span> <span class="muted">| roughly follows the S&P 500</span> | Liquidity <span class="value">7/10</span></div>
+                        <div class="stats-row"><span class="label">Sentiment:</span> <span class="secondary">Analyst:</span> <span class="value">Buy</span> | Buzz <span class="value">5.8x</span> <span class="muted">| moderate attention</span> | Trend: <span class="value">11 stable sentiment</span></div>
+                    </div>
+
+                    <div class="headlines">
+                        <div class="headlines-title">Recent Headlines</div>
+                        <div class="headlines-list">
+                            <div class="headline-item">
+                                <div class="headline-text">"FCX gains from sector rotation tailwinds"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Seeking Alpha</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"Institutional investors increase FCX positions"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Bloomberg</span>
+                                    <span class="headline-sentiment neutral">neutral</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"FCX shows improving revenue growth trajectory"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Yahoo Finance</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 3: NKE -->
+            <div class="trade-card">
+                <div class="card-header">
+                    <div class="card-title-row">
+                        <div class="card-title-left">
+                            <div class="ticker">NKE</div>
+                            <div class="score medium">59.0</div>
+                            <div class="grade">C+</div>
+                        </div>
+                        <div class="card-tags">
+                            <span class="pill neutral">NEUTRAL</span>
+                            <span class="pill sector">Consumer Cyclical</span>
+                            <span class="pill position-half">3/4 HALF SIZE</span>
+                        </div>
+                    </div>
+
+                    <div class="score-bars">
+                        <div class="score-bar">
+                            <div class="bar-label">Vol Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 61%"></div></div>
+                            <div class="bar-value medium">61</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Quality</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 52%"></div></div>
+                            <div class="bar-value medium">52</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Regime</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 59%"></div></div>
+                            <div class="bar-value medium">59</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Info Edge</div>
+                            <div class="bar-track"><div class="bar-fill low" style="width: 48%"></div></div>
+                            <div class="bar-value low">48</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="strategy-block">
+                        <div class="strategy-header">
+                            <div class="strategy-title-left">
+                                <div class="strategy-badge">A</div>
+                                <div class="strategy-name">Iron Condor</div>
+                            </div>
+                            <div class="strategy-meta">
+                                <div class="strategy-expiration">2026-04-12</div>
+                                <div class="dte-badge">18 DTE</div>
+                            </div>
+                        </div>
+
+                        <div class="legs-table">
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$85</div>
+                                <div class="leg-price">$0.68</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$82</div>
+                                <div class="leg-price">$0.31</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$92</div>
+                                <div class="leg-price">$0.55</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$95</div>
+                                <div class="leg-price">$0.28</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Max Profit</div>
+                                <div class="metric-value profit">$64</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Max Loss</div>
+                                <div class="metric-value loss">$136</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value neutral">51.8%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Risk/Reward</div>
+                                <div class="metric-value neutral">0.47</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-strip credit">Collect $64 premium per contract</div>
+                    </div>
+
+                    <div class="why-section">
+                        <div class="why-title">Why This Trade</div>
+                        <div class="why-list">
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Options are moderately priced — IV rank at 48%. Premiums are in the middle range, balanced for both buyers and sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Implied vol (28.4%) exceeds realized vol (18.2%) — market expects more volatility than recent history. Slight edge for sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Limited bullish consensus — only 42% of analysts rate this a Buy or Strong Buy.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="macro-banner">
+                        <strong>Dominant macro regime:</strong> <code>GOLDILOCKS</code> (0% probability). <code>VIX 19.8</code>. Regime favors <strong>Iron Condor</strong>. SPY correlation: <code>0.65</code> (modifier: <code>0.89x</code>).
+                    </div>
+
+                    <div class="key-stats">
+                        <div class="key-stats-title">Key Stats</div>
+                        <div class="stats-row"><span class="label">Volatility:</span> <span class="secondary">IV Rank</span> <span class="value">48.00</span> <span class="muted">| options are moderately priced vs. past year</span> | IV <span class="value">28.4%</span> | HV <span class="value">18.2%</span></div>
+                        <div class="stats-row"><span class="label">Company:</span> <span class="secondary">P/E</span> <span class="value">26.1</span> <span class="muted">| expensive</span> | Cap <span class="value">$115.0B</span> | Earnings <span class="value">2026-05-15</span></div>
+                        <div class="stats-row"><span class="label">Market:</span> <span class="secondary">Beta</span> <span class="value">0.94</span> <span class="muted">| less volatile than the market</span> | SPY Corr <span class="value">0.65</span> <span class="muted">| roughly follows the S&P 500</span> | Liquidity <span class="value">9/10</span></div>
+                        <div class="stats-row"><span class="label">Sentiment:</span> <span class="secondary">Analyst:</span> <span class="value">Hold</span> | Buzz <span class="value">4.2x</span> <span class="muted">| below-average attention</span> | Trend: <span class="value">10 stable sentiment</span></div>
+                    </div>
+
+                    <div class="headlines">
+                        <div class="headlines-title">Recent Headlines</div>
+                        <div class="headlines-list">
+                            <div class="headline-item">
+                                <div class="headline-text">"NKE posts strong quarterly earnings beat"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">MarketWatch</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"Options market braces for NKE volatility"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">CNBC</span>
+                                    <span class="headline-sentiment neutral">neutral</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"NKE technical setup shows bullish divergence"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Seeking Alpha</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 4: TEAM -->
+            <div class="trade-card">
+                <div class="card-header">
+                    <div class="card-title-row">
+                        <div class="card-title-left">
+                            <div class="ticker">TEAM</div>
+                            <div class="score medium">55.7</div>
+                            <div class="grade">C+</div>
+                        </div>
+                        <div class="card-tags">
+                            <span class="pill neutral">NEUTRAL</span>
+                            <span class="pill sector">Technology</span>
+                            <span class="pill position-half">3/4 HALF SIZE</span>
+                        </div>
+                    </div>
+
+                    <div class="score-bars">
+                        <div class="score-bar">
+                            <div class="bar-label">Vol Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 67%"></div></div>
+                            <div class="bar-value medium">67</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Quality</div>
+                            <div class="bar-track"><div class="bar-fill low" style="width: 49%"></div></div>
+                            <div class="bar-value low">49</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Regime</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 54%"></div></div>
+                            <div class="bar-value medium">54</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Info Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 57%"></div></div>
+                            <div class="bar-value medium">57</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="strategy-block">
+                        <div class="strategy-header">
+                            <div class="strategy-title-left">
+                                <div class="strategy-badge">A</div>
+                                <div class="strategy-name">Put Credit Spread</div>
+                            </div>
+                            <div class="strategy-meta">
+                                <div class="strategy-expiration">2026-04-16</div>
+                                <div class="dte-badge">22 DTE</div>
+                            </div>
+                        </div>
+
+                        <div class="legs-table">
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$48</div>
+                                <div class="leg-price">$0.72</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$45</div>
+                                <div class="leg-price">$0.29</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Max Profit</div>
+                                <div class="metric-value profit">$43</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Max Loss</div>
+                                <div class="metric-value loss">$257</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value neutral">65.3%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Risk/Reward</div>
+                                <div class="metric-value neutral">0.17</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-strip credit">Collect $43 premium per contract</div>
+                    </div>
+
+                    <div class="why-section">
+                        <div class="why-title">Why This Trade</div>
+                        <div class="why-list">
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Options are moderately priced — IV rank at 52%. Premiums are in the middle range, balanced for both buyers and sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Implied vol (31.7%) exceeds realized vol (20.1%) — market expects more volatility than recent history. Slight edge for sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Neutral sentiment but strong vol edge — great for non-directional strategies like Iron Condor.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="macro-banner">
+                        <strong>Dominant macro regime:</strong> <code>GOLDILOCKS</code> (0% probability). <code>VIX 20.5</code>. Regime favors <strong>Iron Condor</strong>. SPY correlation: <code>0.61</code> (modifier: <code>0.91x</code>).
+                    </div>
+
+                    <div class="key-stats">
+                        <div class="key-stats-title">Key Stats</div>
+                        <div class="stats-row"><span class="label">Volatility:</span> <span class="secondary">IV Rank</span> <span class="value">52.00</span> <span class="muted">| options are moderately priced vs. past year</span> | IV <span class="value">31.7%</span> | HV <span class="value">20.1%</span></div>
+                        <div class="stats-row"><span class="label">Company:</span> <span class="secondary">P/E</span> <span class="value">34.2</span> <span class="muted">| very expensive</span> | Cap <span class="value">$65.0B</span> | Earnings <span class="value">2026-05-08</span></div>
+                        <div class="stats-row"><span class="label">Market:</span> <span class="secondary">Beta</span> <span class="value">1.08</span> <span class="muted">| slightly more volatile than the market</span> | SPY Corr <span class="value">0.61</span> <span class="muted">| roughly follows the S&P 500</span> | Liquidity <span class="value">6/10</span></div>
+                        <div class="stats-row"><span class="label">Sentiment:</span> <span class="secondary">Analyst:</span> <span class="value">Buy</span> | Buzz <span class="value">3.1x</span> <span class="muted">| low attention</span> | Trend: <span class="value">13 stable sentiment</span></div>
+                    </div>
+
+                    <div class="headlines">
+                        <div class="headlines-title">Recent Headlines</div>
+                        <div class="headlines-list">
+                            <div class="headline-item">
+                                <div class="headline-text">"TEAM technical setup shows bullish divergence"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Yahoo Finance</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"Insider buying activity detected at TEAM"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Seeking Alpha</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"Volatility spike expected around TEAM earnings"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Reuters</span>
+                                    <span class="headline-sentiment neutral">neutral</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 5: AMGN -->
+            <div class="trade-card">
+                <div class="card-header">
+                    <div class="card-title-row">
+                        <div class="card-title-left">
+                            <div class="ticker">AMGN</div>
+                            <div class="score high">62.1</div>
+                            <div class="grade">B-</div>
+                        </div>
+                        <div class="card-tags">
+                            <span class="pill bullish">BULLISH</span>
+                            <span class="pill sector">Healthcare</span>
+                            <span class="pill position-full">4/4 FULL POSITION</span>
+                        </div>
+                    </div>
+
+                    <div class="score-bars">
+                        <div class="score-bar">
+                            <div class="bar-label">Vol Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 64%"></div></div>
+                            <div class="bar-value medium">64</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Quality</div>
+                            <div class="bar-track"><div class="bar-fill high" style="width: 76%"></div></div>
+                            <div class="bar-value high">76</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Regime</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 58%"></div></div>
+                            <div class="bar-value medium">58</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Info Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 59%"></div></div>
+                            <div class="bar-value medium">59</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="strategy-block">
+                        <div class="strategy-header">
+                            <div class="strategy-title-left">
+                                <div class="strategy-badge">A</div>
+                                <div class="strategy-name">Iron Condor</div>
+                            </div>
+                            <div class="strategy-meta">
+                                <div class="strategy-expiration">2026-04-18</div>
+                                <div class="dte-badge">24 DTE</div>
+                            </div>
+                        </div>
+
+                        <div class="legs-table">
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$115</div>
+                                <div class="leg-price">$0.82</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$113</div>
+                                <div class="leg-price">$0.38</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$125</div>
+                                <div class="leg-price">$0.71</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">CALL</div>
+                                <div class="leg-strike">$127</div>
+                                <div class="leg-price">$0.44</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Max Profit</div>
+                                <div class="metric-value profit">$71</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Max Loss</div>
+                                <div class="metric-value loss">$129</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value neutral">52.1%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Risk/Reward</div>
+                                <div class="metric-value neutral">0.55</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-strip credit">Collect $71 premium per contract</div>
+                    </div>
+
+                    <div class="strategy-block">
+                        <div class="strategy-header">
+                            <div class="strategy-title-left">
+                                <div class="strategy-badge">B</div>
+                                <div class="strategy-name">Put Credit Spread</div>
+                            </div>
+                            <div class="strategy-meta">
+                                <div class="strategy-expiration">2026-04-24</div>
+                                <div class="dte-badge">30 DTE</div>
+                            </div>
+                        </div>
+
+                        <div class="legs-table">
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$112</div>
+                                <div class="leg-price">$0.91</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$109</div>
+                                <div class="leg-price">$0.42</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Max Profit</div>
+                                <div class="metric-value profit">$49</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Max Loss</div>
+                                <div class="metric-value loss">$251</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value neutral">66.8%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Risk/Reward</div>
+                                <div class="metric-value neutral">0.19</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-strip credit">Collect $49 premium per contract</div>
+                    </div>
+
+                    <div class="why-section">
+                        <div class="why-title">Why This Trade</div>
+                        <div class="why-list">
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Options are moderately priced — IV rank at 58%. Premiums are in the middle range, balanced for both buyers and sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Implied vol (29.8%) exceeds realized vol (19.3%) — market expects more volatility than recent history. Slight edge for sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Wall Street is bullish — 78% of analysts rate this a Buy or Strong Buy.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">4-quarter earnings beat streak — the company keeps surprising to the upside.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="macro-banner">
+                        <strong>Dominant macro regime:</strong> <code>GOLDILOCKS</code> (0% probability). <code>VIX 20.8</code>. Regime favors <strong>Iron Condor</strong>. SPY correlation: <code>0.59</code> (modifier: <code>0.92x</code>).
+                    </div>
+
+                    <div class="key-stats">
+                        <div class="key-stats-title">Key Stats</div>
+                        <div class="stats-row"><span class="label">Volatility:</span> <span class="secondary">IV Rank</span> <span class="value">58.00</span> <span class="muted">| options are moderately priced vs. past year</span> | IV <span class="value">29.8%</span> | HV <span class="value">19.3%</span></div>
+                        <div class="stats-row"><span class="label">Company:</span> <span class="secondary">P/E</span> <span class="value">18.9</span> <span class="muted">| fair on earnings</span> | Cap <span class="value">$130.0B</span> | Earnings <span class="value">2026-05-01</span></div>
+                        <div class="stats-row"><span class="label">Market:</span> <span class="secondary">Beta</span> <span class="value">0.87</span> <span class="muted">| less volatile than the market</span> | SPY Corr <span class="value">0.59</span> <span class="muted">| somewhat independent from S&P 500</span> | Liquidity <span class="value">9/10</span></div>
+                        <div class="stats-row"><span class="label">Sentiment:</span> <span class="secondary">Analyst:</span> <span class="value">Strong Buy</span> | Buzz <span class="value">6.4x</span> <span class="muted">| above-average attention</span> | Trend: <span class="value">15 stable sentiment</span></div>
+                    </div>
+
+                    <div class="headlines">
+                        <div class="headlines-title">Recent Headlines</div>
+                        <div class="headlines-list">
+                            <div class="headline-item">
+                                <div class="headline-text">"AMGN shows improving revenue growth trajectory"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Bloomberg</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"Fund managers favor AMGN in rotation"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">MarketWatch</span>
+                                    <span class="headline-sentiment neutral">neutral</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"AMGN gains from sector rotation tailwinds"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">CNBC</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 6: WMT -->
+            <div class="trade-card">
+                <div class="card-header">
+                    <div class="card-title-row">
+                        <div class="card-title-left">
+                            <div class="ticker">WMT</div>
+                            <div class="score medium">57.3</div>
+                            <div class="grade">C</div>
+                        </div>
+                        <div class="card-tags">
+                            <span class="pill neutral">NEUTRAL</span>
+                            <span class="pill sector">Consumer Defensive</span>
+                            <span class="pill position-half">3/4 HALF SIZE</span>
+                        </div>
+                    </div>
+
+                    <div class="score-bars">
+                        <div class="score-bar">
+                            <div class="bar-label">Vol Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 59%"></div></div>
+                            <div class="bar-value medium">59</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Quality</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 68%"></div></div>
+                            <div class="bar-value medium">68</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Regime</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 52%"></div></div>
+                            <div class="bar-value medium">52</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="bar-label">Info Edge</div>
+                            <div class="bar-track"><div class="bar-fill medium" style="width: 51%"></div></div>
+                            <div class="bar-value medium">51</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="strategy-block">
+                        <div class="strategy-header">
+                            <div class="strategy-title-left">
+                                <div class="strategy-badge">A</div>
+                                <div class="strategy-name">Put Credit Spread</div>
+                            </div>
+                            <div class="strategy-meta">
+                                <div class="strategy-expiration">2026-04-14</div>
+                                <div class="dte-badge">20 DTE</div>
+                            </div>
+                        </div>
+
+                        <div class="legs-table">
+                            <div class="leg-row">
+                                <div class="leg-action sell">SELL</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$92</div>
+                                <div class="leg-price">$0.68</div>
+                            </div>
+                            <div class="leg-row">
+                                <div class="leg-action buy">BUY</div>
+                                <div class="leg-type">PUT</div>
+                                <div class="leg-strike">$89</div>
+                                <div class="leg-price">$0.27</div>
+                            </div>
+                        </div>
+
+                        <div class="strategy-metrics">
+                            <div class="metric">
+                                <div class="metric-label">Max Profit</div>
+                                <div class="metric-value profit">$41</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Max Loss</div>
+                                <div class="metric-value loss">$259</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Win Rate</div>
+                                <div class="metric-value neutral">64.2%</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-label">Risk/Reward</div>
+                                <div class="metric-value neutral">0.16</div>
+                            </div>
+                        </div>
+
+                        <div class="cta-strip credit">Collect $41 premium per contract</div>
+                    </div>
+
+                    <div class="why-section">
+                        <div class="why-title">Why This Trade</div>
+                        <div class="why-list">
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Options are moderately priced — IV rank at 51%. Premiums are in the middle range, balanced for both buyers and sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Implied vol (27.3%) exceeds realized vol (17.8%) — market expects more volatility than recent history. Slight edge for sellers.</div>
+                            </div>
+                            <div class="why-item">
+                                <div class="why-bullet">•</div>
+                                <div class="why-text">Analyst consensus is mixed — 56% rate it Buy/Strong Buy, rest are Hold/Sell.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <div class="macro-banner">
+                        <strong>Dominant macro regime:</strong> <code>GOLDILOCKS</code> (0% probability). <code>VIX 19.4</code>. Regime favors <strong>Iron Condor</strong>. SPY correlation: <code>0.48</code> (modifier: <code>0.95x</code>).
+                    </div>
+
+                    <div class="key-stats">
+                        <div class="key-stats-title">Key Stats</div>
+                        <div class="stats-row"><span class="label">Volatility:</span> <span class="secondary">IV Rank</span> <span class="value">51.00</span> <span class="muted">| options are moderately priced vs. past year</span> | IV <span class="value">27.3%</span> | HV <span class="value">17.8%</span></div>
+                        <div class="stats-row"><span class="label">Company:</span> <span class="secondary">P/E</span> <span class="value">24.7</span> <span class="muted">| expensive</span> | Cap <span class="value">$500.0B</span> | Earnings <span class="value">2026-05-22</span></div>
+                        <div class="stats-row"><span class="label">Market:</span> <span class="secondary">Beta</span> <span class="value">0.72</span> <span class="muted">| much less volatile than the market</span> | SPY Corr <span class="value">0.48</span> <span class="muted">| somewhat independent from S&P 500</span> | Liquidity <span class="value">8/10</span></div>
+                        <div class="stats-row"><span class="label">Sentiment:</span> <span class="secondary">Analyst:</span> <span class="value">Buy</span> | Buzz <span class="value">2.9x</span> <span class="muted">| low attention</span> | Trend: <span class="value">16 stable sentiment</span></div>
+                    </div>
+
+                    <div class="headlines">
+                        <div class="headlines-title">Recent Headlines</div>
+                        <div class="headlines-list">
+                            <div class="headline-item">
+                                <div class="headline-text">"WMT announces strategic partnership expansion"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Reuters</span>
+                                    <span class="headline-sentiment neutral">neutral</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"Institutional investors increase WMT positions"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Yahoo Finance</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                            <div class="headline-item">
+                                <div class="headline-text">"WMT shows improving revenue growth trajectory"</div>
+                                <div class="headline-meta">
+                                    <span class="headline-source">Seeking Alpha</span>
+                                    <span class="headline-sentiment bullish">bullish</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
